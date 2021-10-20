@@ -36,3 +36,30 @@ pub fn day02() {
 
     println!();
 }
+
+pub fn day03() {
+    use day03::point::Point;
+
+    print_day("Day 03");
+    println!("How many trees would you encounter?");
+    let input = day03::DAY03_INPUT;
+    //                      traverse
+    let trees: i64 = day03::traverse(&Point::new(3, 1), input);
+    println!("Part 1 answer: {}", trees);
+
+    println!("What do you get if you multiply together the number of trees encountered on each of the listed slopes?");
+
+    let trees1 = day03::traverse(&Point::new(1, 1), input);
+    let trees2 = day03::traverse(&Point::new(5, 1), input);
+    let trees3 = day03::traverse(&Point::new(7, 1), input);
+    let trees4 = day03::traverse(&Point::new(1, 2), input);
+
+    let answer2 = trees1 * trees * trees2 * trees3 * trees4;
+
+    println!(
+        "Part 2 answer: {} = {} * {} * {} * {} * {}",
+        answer2, trees1, trees, trees2, trees3, trees4
+    );
+
+    println!();
+}

@@ -36,7 +36,7 @@ pub mod expense_report {
 }
 
 #[cfg(test)]
-mod tests_day01 {
+mod day01 {
     use crate::expense_report::*;
 
     const REPORT: [&str; 6] = ["1721", "979", "366", "299", "675", "1456"];

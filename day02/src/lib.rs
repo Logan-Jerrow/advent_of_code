@@ -98,7 +98,7 @@ pub fn valid_count_toboggan(list: &[&str]) -> i32 {
 }
 
 #[cfg(test)]
-mod tests_day02 {
+mod day02 {
     use super::*;
 
     #[test]
