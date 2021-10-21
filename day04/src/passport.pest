@@ -1,0 +1,38 @@
+file = { SOI              
+    ~ (passport)*
+    ~ EOI
+}
+
+passport = { (field ~ separator)+ ~ new_line ~ new_line }
+field = { (
+    birth_year | issue_year | expiration_year 
+    | height
+    | hair_color
+    | eye_color
+    | passport_id | country_id ) }
+
+// byr:1937
+birth_year = ${ "byr:" ~ ASCII_DIGIT+ }
+// iyr:2017
+issue_year = ${ "iyr:" ~ ASCII_DIGIT+ }
+// eyr:2020
+expiration_year = ${ "eyr:" ~ ASCII_DIGIT+ }
+
+// hgt:183cm
+// hgt:59in
+height = ${ "hgt:" ~ ASCII_DIGIT+ ~ ("cm" | "in") }
+
+// hcl:#fffffd
+hair_color = ${ "hcl:#" ~ ASCII_HEX_DIGIT+ }
+
+// ecl:gry
+eye_color = ${ "ecl:" ~ alpha_lower{3} }
+
+// pid:860033327
+passport_id = ${ "pid:" ~ ASCII_DIGIT+ }
+// cid:147
+country_id = ${ "cid:" ~ ASCII_DIGIT+ }
+
+
+new_line = { "\r\n" | "\n" }
+separator = { new_line | ' ' }
