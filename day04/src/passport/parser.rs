@@ -1,16 +1,153 @@
 use std::str::FromStr;
 
 use nom::{
-    branch::alt,
+    branch::{alt, permutation},
     bytes::complete::{tag, take, take_while_m_n},
-    character::complete::{alpha0, alpha1, alphanumeric1, digit1, hex_digit1, multispace1},
-    combinator::{eof, map_parser, map_res, opt},
+    character::complete::{
+        alpha0, alpha1, alphanumeric0, alphanumeric1, digit1, hex_digit1, multispace0, multispace1,
+        one_of,
+    },
+    combinator::{eof, map_parser, map_res, opt, recognize},
     multi::many1,
-    sequence::{pair, preceded, separated_pair, terminated},
+    sequence::{delimited, pair, preceded, separated_pair, terminated},
     IResult,
 };
 
-use super::Passport;
+use super::{color::Color, id::Id, length::Length, year::Year, Passport};
+
+pub fn parse_passport_redo(input: &str) -> IResult<&str, Option<Passport>> {
+    /*
+    let (i, byr) = byr(input)?;
+    let (i, iyr) = iyr(i)?;
+    let (i, eyr) = eyr(i)?;
+    let (i, hgt) = hgt(i)?;
+    let (i, hcl) = hcl(i)?;
+    let (i, ecl) = ecl(i)?;
+    let (i, pid) = pid(i)?;
+    */
+    let out = permutation((
+        delimited(multispace0, byr, multispace0),
+        delimited(multispace0, iyr, multispace0),
+        delimited(multispace0, eyr, multispace0),
+        delimited(multispace0, hgt, multispace0),
+        delimited(multispace0, hcl, multispace0),
+        delimited(multispace0, ecl, multispace0),
+        delimited(multispace0, pid, multispace0),
+        delimited(
+            multispace0,
+            opt(pair(tag("cid:"), alphanumeric0)),
+            multispace0,
+        ),
+    ))(input)?;
+    // Ok((i, Passport::new(byr, iyr, eyr, hgt, hcl, ecl, pid, None)))
+    Ok((
+        out.0,
+        Passport::new(
+            out.1 .0, out.1 .1, out.1 .2, out.1 .3, out.1 .4, out.1 .5, out.1 .6, None,
+        ),
+    ))
+}
+
+// fn ws(input: &str) -> IResult<&str, char> {
+//     let (i, j) = one_of(" \n")(input)?;
+// }
+
+fn pid(input: &str) -> IResult<&str, Option<Id>> {
+    let (i, _) = tag("pid:")(input)?;
+    let (i, raw) = digit1(i)?;
+
+    if raw.len() == 9 {
+        return Ok((i, Some(super::id::Id(raw.into()))));
+    }
+    Ok((i, None))
+}
+
+fn ecl(input: &str) -> IResult<&str, Option<Color>> {
+    let (i, _) = tag("ecl:")(input)?;
+    let (i, raw) = alt((
+        tag("amb"),
+        tag("blu"),
+        tag("brn"),
+        tag("gry"),
+        tag("grn"),
+        tag("hzl"),
+        tag("oth"),
+    ))(i)?;
+    Ok((i, Some(super::color::Color(raw.into()))))
+}
+
+fn hcl(input: &str) -> IResult<&str, Option<Color>> {
+    let (i, _) = tag("hcl:#")(input)?;
+    let (i, raw) = recognize(many1(one_of("0123456789abcdef")))(i)?;
+
+    if raw.len() == 6 {
+        return Ok((i, Some(super::color::Color(raw.into()))));
+    }
+    Ok((i, None))
+}
+
+fn hgt(input: &str) -> IResult<&str, Option<Length>> {
+    let (i, _) = tag("hgt:")(input)?;
+    let (i, raw) = digit1(i)?;
+    let (i, unit) = alt((tag("cm"), tag("in")))(i)?;
+
+    if unit == "cm" {
+        if let Some(number) = number_limit(raw, 150, 193) {
+            return Ok((i, Some(Length::Cm(number))));
+        }
+    }
+    if unit == "in" {
+        if let Some(number) = number_limit(raw, 59, 76) {
+            return Ok((i, Some(Length::In(number))));
+        }
+    }
+    Ok((i, None))
+}
+
+fn number_limit(input: &str, min: u16, max: u16) -> Option<u16> {
+    if let Ok(num) = input.parse::<u16>() {
+        if num >= min && num <= max {
+            return Some(num);
+        }
+    }
+    None
+}
+
+fn eyr(input: &str) -> IResult<&str, Option<Year>> {
+    let (i, _) = tag("eyr:")(input)?;
+    let (i, raw) = digit1(i)?;
+
+    if raw.len() == 4 {
+        if let Some(number) = number_limit(raw, 2020, 2030) {
+            return Ok((i, Some(Year(number))));
+        }
+    }
+    Ok((i, None))
+}
+
+fn iyr(input: &str) -> IResult<&str, Option<Year>> {
+    let (i, _) = tag("iyr:")(input)?;
+    let (i, raw) = digit1(i)?;
+
+    if raw.len() == 4 {
+        if let Some(number) = number_limit(raw, 2010, 2020) {
+            return Ok((i, Some(Year(number))));
+        }
+    }
+    Ok((i, None))
+}
+
+fn byr(input: &str) -> IResult<&str, Option<Year>> {
+    let (i, _) = tag("byr:")(input)?;
+    let (i, raw) = digit1(i)?;
+
+    if raw.len() == 4 {
+        if let Some(number) = number_limit(raw, 1920, 2002) {
+            return Ok((i, Some(Year(number))));
+        }
+    }
+    Ok((i, None))
+}
 
 pub fn year(input: &str) -> IResult<&str, u16> {
     let (i, _) = tag("byr:")(input)?;
@@ -199,16 +336,7 @@ pub fn parse_passport(input: &str) -> IResult<&str, Option<Passport>> {
     }
     Ok((
         i,
-        Passport::new (
-            birth,
-            issue,
-            expire,
-            height,
-            hair,
-            eye,
-            pass,
-            country,
-        ),
+        Passport::new(birth, issue, expire, height, hair, eye, pass, country),
     ))
 }
 
@@ -216,7 +344,30 @@ pub fn parse_passport(input: &str) -> IResult<&str, Option<Passport>> {
 mod test {
     use crate::passport::{color::Color, id::Id, length::Length, year::Year};
 
-    use super::parse_passport;
+    use super::*;
+
+    #[test]
+    fn test_redo() {
+        let input = "iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
+        let something = parse_passport_redo(input);
+        assert!(something.is_ok());
+    }
+
+    #[test]
+    fn test_redo_1() {
+        let input = "eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm";
+        let something = parse_passport_redo(input);
+        assert!(something.is_ok());
+    }
+
+    #[test]
+    fn test_byr() {
+        let y = byr("byr:2002").unwrap();
+        assert_eq!(y.1, Some(Year(2002)));
+        let y = byr("byr:2003").unwrap();
+        assert!(y.1.is_none());
+    }
 
     #[test]
     fn test_parse_passport() {

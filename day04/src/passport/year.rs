@@ -3,7 +3,7 @@ use nom::{error::Error, Finish};
 use super::parser::year;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct Year(u16);
+pub struct Year(pub u16);
 
 impl Year {
     pub fn new(s: &str) -> Option<Year> {

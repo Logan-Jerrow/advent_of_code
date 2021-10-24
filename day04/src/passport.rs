@@ -6,6 +6,7 @@ pub mod year;
 mod parser;
 
 pub use parser::parse_passport;
+pub use parser::parse_passport_redo;
 
 #[derive(Debug, PartialEq)]
 pub struct Passport<'a> {

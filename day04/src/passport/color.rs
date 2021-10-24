@@ -4,7 +4,7 @@ use std::borrow::Cow;
 use super::parser::color_redo;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Color<'a>(Cow<'a, str>);
+pub struct Color<'a>(pub Cow<'a, str>);
 
 impl Color<'_> {
     pub fn new(s: &str) -> Option<Color> {

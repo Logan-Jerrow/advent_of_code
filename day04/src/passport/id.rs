@@ -4,7 +4,7 @@ use std::borrow::Cow;
 use super::parser::id;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Id<'a>(Cow<'a, str>);
+pub struct Id<'a>(pub Cow<'a, str>);
 
 impl Id<'_> {
     pub fn new(s: &str) -> Option<Id> {
