@@ -1,12 +1,15 @@
-use nom::{
-    error::Error,
-    Finish,
-};
+use nom::{error::Error, Finish};
 
 use super::parser::year;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct Year(u16);
+
+impl Year {
+    pub fn new(s: &str) -> Option<Year> {
+        Some(Year(s.parse::<u16>().ok()?))
+    }
+}
 
 impl std::str::FromStr for Year {
     type Err = Error<String>;

@@ -9,6 +9,18 @@ pub enum Length {
     Unspecified(u16),
 }
 
+impl Length {
+    pub fn new(number: &str, unit: Option<&str>) -> Option<Length> {
+        let number = number.parse::<u16>().ok()?;
+        match unit {
+            Some("cm") => Some(Length::Cm(number)),
+            Some("in") => Some(Length::In(number)),
+            Some(_) => Some(Length::Unknown(number)),
+            None => Some(Length::Unspecified(number)),
+        }
+    }
+}
+
 impl std::str::FromStr for Length {
     type Err = Error<String>;
 
