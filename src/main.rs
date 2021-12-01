@@ -60,4 +60,46 @@
 /// How many measurements are larger than the previous measurement?
 fn main() {
     println!("--- Day 1: Sonar Sweep ---");
+
+    let input = include_str!("../input.txt");
+    let mut measurement: Vec<(u32, Depth)> = Vec::new();
+
+    for number in input
+        .lines()
+        .map(|raw| raw.parse::<u32>().expect("Cannot parse input."))
+    {
+        let previous = measurement.last();
+
+        let mut depth = Depth::NA;
+        if let Some((previous, _)) = previous {
+            depth = get_depth(previous, &number);
+        }
+
+        measurement.push((number, depth)); // 1233
+    }
+
+    let sum = measurement
+        .into_iter()
+        .filter(|(_, d)| *d == Depth::Increased)
+        .count();
+
+    println!(
+        "There are {} measurements that are larger than the previous.",
+        sum
+    );
+}
+
+fn get_depth(a: &u32, b: &u32) -> Depth {
+    match a.cmp(b) {
+        std::cmp::Ordering::Less => Depth::Increased, // 100 < 200
+        std::cmp::Ordering::Equal => panic!("Depth Equal."), //Depth::NA,       // 100 = 100
+        std::cmp::Ordering::Greater => Depth::Decreased, // 200 > 100
+    }
+}
+
+#[derive(Debug, PartialEq)]
+enum Depth {
+    NA,
+    Decreased,
+    Increased,
 }
