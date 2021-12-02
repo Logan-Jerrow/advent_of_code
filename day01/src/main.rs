@@ -59,9 +59,9 @@
 ///
 /// How many measurements are larger than the previous measurement?
 mod depth;
-mod window;
 
 use depth::Depth;
+use itertools::Itertools;
 
 fn main() {
     println!("--- Day 1: Sonar Sweep ---");
@@ -70,15 +70,42 @@ fn main() {
         .lines()
         .map(|raw| raw.parse::<u32>().expect("Cannot parse input."));
 
-    let sum = count_increasing_measurements(input);
+    let sum = count_measurements(input.clone());
 
     println!(
         "There are {} measurements that are larger than the previous.",
         sum
-    );
+    ); // 1233
+
+    println!("- - - Part 2 - - -");
+    let sum = count_three_measurement(input);
+    println!("Part 2 count: {}", sum); // 1275
 }
 
-fn count_increasing_measurements<I>(values: I) -> usize
+fn count_three_measurement<I>(values: I) -> usize
+where
+    I: Iterator<Item = u32>,
+{
+    let mut v = Vec::new();
+
+    for (a, b, c) in values.tuple_windows() {
+        let previous = v.last();
+        let current = a + b + c;
+
+        let mut depth = Depth::NA;
+        if let Some((previous, _)) = previous {
+            depth = get_depth(previous, &current)
+        }
+
+        v.push((current, depth));
+    }
+
+    v.into_iter()
+        .filter(|(_, d)| *d == Depth::Increased)
+        .count()
+}
+
+fn count_measurements<I>(values: I) -> usize
 where
     I: Iterator<Item = u32>,
 {
@@ -104,7 +131,31 @@ where
 fn get_depth(a: &u32, b: &u32) -> Depth {
     match a.cmp(b) {
         std::cmp::Ordering::Less => Depth::Increased, // 100 < 200
-        std::cmp::Ordering::Equal => panic!("Depth Equal."), //Depth::NA,       // 100 = 100
+        std::cmp::Ordering::Equal => Depth::NoChange, //Depth::NA,       // 100 = 100
         std::cmp::Ordering::Greater => Depth::Decreased, // 200 > 100
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use itertools::Itertools;
+
+    const INPUT: [u32; 10] = [199, 200, 208, 210, 200, 207, 240, 269, 260, 263];
+
+    #[test]
+    fn itertools_tuple_window() {
+        let mut v = Vec::new();
+
+        for (a, b, c) in INPUT.into_iter().tuple_windows() {
+            v.push(a + b + c);
+        }
+        assert_eq!(v, vec![607, 618, 618, 617, 647, 716, 769, 792])
+    }
+
+    #[test]
+    fn part2() {
+        let sum = count_three_measurement(INPUT.into_iter());
+        assert_eq!(sum, 5);
     }
 }
