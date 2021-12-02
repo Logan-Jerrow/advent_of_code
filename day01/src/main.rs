@@ -58,16 +58,33 @@
 /// In this example, there are 7 measurements that are larger than the previous measurement.
 ///
 /// How many measurements are larger than the previous measurement?
+mod depth;
+mod window;
+
+use depth::Depth;
+
 fn main() {
     println!("--- Day 1: Sonar Sweep ---");
 
-    let input = include_str!("../input.txt");
+    let input = include_str!("../input.txt")
+        .lines()
+        .map(|raw| raw.parse::<u32>().expect("Cannot parse input."));
+
+    let sum = count_increasing_measurements(input);
+
+    println!(
+        "There are {} measurements that are larger than the previous.",
+        sum
+    );
+}
+
+fn count_increasing_measurements<I>(values: I) -> usize
+where
+    I: Iterator<Item = u32>,
+{
     let mut measurement: Vec<(u32, Depth)> = Vec::new();
 
-    for number in input
-        .lines()
-        .map(|raw| raw.parse::<u32>().expect("Cannot parse input."))
-    {
+    for number in values {
         let previous = measurement.last();
 
         let mut depth = Depth::NA;
@@ -78,15 +95,10 @@ fn main() {
         measurement.push((number, depth)); // 1233
     }
 
-    let sum = measurement
+    measurement
         .into_iter()
         .filter(|(_, d)| *d == Depth::Increased)
-        .count();
-
-    println!(
-        "There are {} measurements that are larger than the previous.",
-        sum
-    );
+        .count()
 }
 
 fn get_depth(a: &u32, b: &u32) -> Depth {
@@ -95,11 +107,4 @@ fn get_depth(a: &u32, b: &u32) -> Depth {
         std::cmp::Ordering::Equal => panic!("Depth Equal."), //Depth::NA,       // 100 = 100
         std::cmp::Ordering::Greater => Depth::Decreased, // 200 > 100
     }
-}
-
-#[derive(Debug, PartialEq)]
-enum Depth {
-    NA,
-    Decreased,
-    Increased,
 }
