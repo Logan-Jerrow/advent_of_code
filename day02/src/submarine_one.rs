@@ -1,24 +1,4 @@
-use itertools::Itertools;
-
-pub fn parse_input(input: &str) -> Vec<Commands> {
-    input
-        .lines()
-        .map(|raw| {
-            raw.split_ascii_whitespace()
-                .collect_tuple()
-                .map(|(c, n)| match c {
-                    "forward" => {
-                        Commands::Forward(n.parse().expect("Parse error for forward number."))
-                    }
-                    "down" => Commands::Down(n.parse().expect("Parse error for down number.")),
-
-                    "up" => Commands::Up(n.parse().expect("Parse error for up number.")),
-                    _ => panic!("Unknown command"),
-                })
-        })
-        .map(|x| x.unwrap())
-        .collect()
-}
+use super::Commands;
 
 #[derive(Debug, Default)]
 pub struct Submarine {
@@ -38,12 +18,6 @@ impl Submarine {
     pub fn cross(&self) -> u32 {
         self.depth * self.horizontal
     }
-}
-#[derive(Debug)]
-pub enum Commands {
-    Forward(u32),
-    Down(u32),
-    Up(u32),
 }
 
 #[cfg(test)]

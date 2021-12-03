@@ -1,27 +1,27 @@
+use super::Commands;
+
 #[derive(Debug, Default)]
 pub struct Submarine {
     depth: u32,
     horizontal: u32,
+    aim: u32,
 }
 
 impl Submarine {
     pub fn move_sub(&mut self, command: Commands) {
         match command {
-            Commands::Forward(x) => self.horizontal += x,
-            Commands::Down(x) => self.depth += x,
-            Commands::Up(x) => self.depth -= x,
+            Commands::Down(x) => self.aim += x,
+            Commands::Up(x) => self.aim -= x,
+            Commands::Forward(x) => {
+                self.horizontal += x;
+                self.depth += self.aim * x;
+            }
         };
     }
 
     pub fn cross(&self) -> u32 {
         self.depth * self.horizontal
     }
-}
-#[derive(Debug)]
-pub enum Commands {
-    Forward(u32),
-    Down(u32),
-    Up(u32),
 }
 
 #[cfg(test)]
@@ -41,6 +41,6 @@ mod test {
     fn sub() {
         let mut sub = Submarine::default();
         INPUT.into_iter().for_each(|c| sub.move_sub(c));
-        assert_eq!(sub.cross(), 150);
+        assert_eq!(sub.cross(), 900);
     }
 }
