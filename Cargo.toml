@@ -1,3 +1,0 @@
-[workspace]
-
-members = ["aoc_2020", "aoc_2021"]
