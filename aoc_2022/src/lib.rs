@@ -28,13 +28,18 @@ inventory from the previous Elf's inventory (if any) by a blank line.
 For example, suppose the Elves finish writing their items' Calories and end up with the following
 list:
 
-1000 2000 3000
+1000
+2000
+3000
 
 4000
 
-5000 6000
+5000
+6000
 
-7000 8000 9000
+7000
+8000
+9000
 
 10000
 
@@ -52,12 +57,29 @@ Calories.
 
 Find the Elf carrying the most Calories. How many total Calories is that Elf carrying?
 
+--- Part Two ---
+
+By the time you calculate the answer to the Elves' question, they've already realized that the Elf
+carrying the most Calories of food might eventually run out of snacks.
+
+To avoid this unacceptable situation, the Elves would instead like to know the total Calories
+carried by the top three Elves carrying the most Calories. That way, even if one of those Elves
+runs out of snacks, they still have two backups.
+
+In the example above, the top three Elves are the fourth Elf (with 24000 Calories), then the third
+Elf (with 11000 Calories), then the fifth Elf (with 10000 Calories). The sum of the Calories
+carried by these three elves is 45000.
+
+Find the top three Elves carrying the most Calories. How many Calories are those Elves carrying in
+total?
+
 */
 
 use std::str::FromStr;
 
-fn process_elves(input: &str) -> Vec<Elf> {
-    let lines = input.lines().filter(|l| !l.is_empty());
+pub fn process_elves(input: &str) -> Vec<Elf> {
+    // let lines = input.lines().filter(|l| !l.is_empty());
+    let lines = input.split("\n\n");
 
     let mut elfs: Vec<Elf> = Vec::with_capacity(lines.clone().count());
     for line in lines {
@@ -67,12 +89,20 @@ fn process_elves(input: &str) -> Vec<Elf> {
     elfs
 }
 
-fn most_calories(elfs: &[Elf]) -> Option<&Elf> {
-    elfs.iter().max()
+pub fn most_calories(elves: &[Elf]) -> Option<&Elf> {
+    elves.iter().max()
+}
+
+pub fn most_3_total(elves: &[Elf]) -> u32 {
+    let mut cal: Vec<u32> = elves.iter().map(|e| e.total()).collect();
+    cal.sort();
+
+    let count = cal.len();
+    cal[count - 3..].iter().sum()
 }
 
 #[derive(Debug, PartialEq, Eq)]
-struct Elf(Vec<u32>);
+pub struct Elf(Vec<u32>);
 
 impl PartialOrd for Elf {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
@@ -84,7 +114,7 @@ impl PartialOrd for Elf {
 }
 
 impl Elf {
-    fn total(&self) -> u32 {
+    pub fn total(&self) -> u32 {
         self.0.iter().sum::<u32>()
     }
 }
@@ -102,10 +132,10 @@ impl FromStr for Elf {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let fruit_count = s.matches(' ').count();
+        let fruit_count = s.matches('\n').count();
         let mut calories: Vec<u32> = Vec::with_capacity(fruit_count);
 
-        for c in s.split_ascii_whitespace() {
+        for c in s.lines() {
             calories.push(c.parse().unwrap());
         }
         Ok(Elf(calories))
@@ -116,13 +146,18 @@ impl FromStr for Elf {
 mod tests {
     use super::*;
 
-    const INPUT: &str = "1000 2000 3000
+    const INPUT: &str = "1000
+2000
+3000
 
 4000
 
-5000 6000
+5000
+6000
 
-7000 8000 9000
+7000
+8000
+9000
 
 10000";
 
