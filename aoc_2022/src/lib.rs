@@ -75,78 +75,89 @@ total?
 
 */
 
-use std::str::FromStr;
+pub mod day01 {
+    use std::str::FromStr;
 
-pub fn process_elves(input: &str) -> Vec<Elf> {
-    // let lines = input.lines().filter(|l| !l.is_empty());
-    let lines = input.split("\n\n");
+    const day01: &str = include_str!("../input/day01.txt");
 
-    let mut elfs: Vec<Elf> = Vec::with_capacity(lines.clone().count());
-    for line in lines {
-        let elf = line.parse::<Elf>().unwrap();
-        elfs.push(elf);
+    pub fn part1() -> u32 {
+        most_calories(&process_elves(day01)).unwrap().total()
     }
-    elfs
-}
 
-pub fn most_calories(elves: &[Elf]) -> Option<&Elf> {
-    elves.iter().max()
-}
-
-pub fn most_3_total(elves: &[Elf]) -> u32 {
-    let mut cal: Vec<u32> = elves.iter().map(|e| e.total()).collect();
-    cal.sort();
-
-    let count = cal.len();
-    cal[count - 3..].iter().sum()
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Elf(Vec<u32>);
-
-impl PartialOrd for Elf {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        let s: u32 = self.0.iter().sum();
-        let o: u32 = other.0.iter().sum();
-
-        s.partial_cmp(&o)
+    pub fn part2() -> u32 {
+        most_3_total(&process_elves(day01))
     }
-}
 
-impl Elf {
-    pub fn total(&self) -> u32 {
-        self.0.iter().sum::<u32>()
-    }
-}
+    fn process_elves(input: &str) -> Vec<Elf> {
+        // let lines = input.lines().filter(|l| !l.is_empty());
+        let lines = input.split("\n\n");
 
-impl Ord for Elf {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        let s: u32 = self.0.iter().sum();
-        let o: u32 = other.0.iter().sum();
-
-        s.cmp(&o)
-    }
-}
-
-impl FromStr for Elf {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let fruit_count = s.matches('\n').count();
-        let mut calories: Vec<u32> = Vec::with_capacity(fruit_count);
-
-        for c in s.lines() {
-            calories.push(c.parse().unwrap());
+        let mut elfs: Vec<Elf> = Vec::with_capacity(lines.clone().count());
+        for line in lines {
+            let elf = line.parse::<Elf>().unwrap();
+            elfs.push(elf);
         }
-        Ok(Elf(calories))
+        elfs
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    fn most_calories(elves: &[Elf]) -> Option<&Elf> {
+        elves.iter().max()
+    }
 
-    const INPUT: &str = "1000
+    fn most_3_total(elves: &[Elf]) -> u32 {
+        let mut cal: Vec<u32> = elves.iter().map(|e| e.total()).collect();
+        cal.sort();
+
+        let count = cal.len();
+        cal[count - 3..].iter().sum()
+    }
+
+    #[derive(Debug, PartialEq, Eq)]
+    struct Elf(Vec<u32>);
+
+    impl PartialOrd for Elf {
+        fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+            let s: u32 = self.0.iter().sum();
+            let o: u32 = other.0.iter().sum();
+
+            s.partial_cmp(&o)
+        }
+    }
+
+    impl Elf {
+        pub fn total(&self) -> u32 {
+            self.0.iter().sum::<u32>()
+        }
+    }
+
+    impl Ord for Elf {
+        fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+            let s: u32 = self.0.iter().sum();
+            let o: u32 = other.0.iter().sum();
+
+            s.cmp(&o)
+        }
+    }
+
+    impl FromStr for Elf {
+        type Err = String;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            let fruit_count = s.matches('\n').count();
+            let mut calories: Vec<u32> = Vec::with_capacity(fruit_count);
+
+            for c in s.lines() {
+                calories.push(c.parse().unwrap());
+            }
+            Ok(Elf(calories))
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        const INPUT: &str = "1000
 2000
 3000
 
@@ -161,11 +172,12 @@ mod tests {
 
 10000";
 
-    #[test]
-    fn test() {
-        let elfs: Vec<Elf> = process_elves(INPUT);
+        #[test]
+        fn test() {
+            let elfs: Vec<Elf> = process_elves(INPUT);
 
-        let most = most_calories(&elfs).unwrap();
-        assert_eq!(most.total(), 24000);
+            let most = most_calories(&elfs).unwrap();
+            assert_eq!(most.total(), 24000);
+        }
     }
 }
